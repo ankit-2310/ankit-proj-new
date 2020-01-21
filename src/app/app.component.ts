@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import {MatTableDataSource} from '@angular/material/table';
 import {MatDialog} from '@angular/material/dialog';
 import {DialogComponent} from './dialog/dialog.component'
+import {HitsService} from './hits.service'
 
 export interface PeriodicElement {
   name: string;
@@ -31,10 +32,22 @@ const ELEMENT_DATA: PeriodicElement[] = [
 export class AppComponent {
   title = 'ankit-proj-new';
 
-  constructor(public dialog: MatDialog) {}
+  constructor(public dialog: MatDialog,
+    public hitsService: HitsService) {}
 
-  displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
-  dataSource = new MatTableDataSource(ELEMENT_DATA);
+    interval : any
+  
+  ngOnInit(){
+    this.showData()
+    this.setNewInterval()
+  }
+
+  ngOnDestrory(){
+    clearInterval(this.interval)
+  }
+
+  displayedColumns: string[] = ['title', 'url', 'created_by', 'author'];
+  dataSource:any  
 
   applyFilter(filterValue: string) {
     this.dataSource.filter = filterValue.trim().toLowerCase();
@@ -48,6 +61,17 @@ export class AppComponent {
     dialogRef.afterClosed().subscribe(result => {
       console.log('The dialog was closed');
     });
+  }
+
+  showData() {
+    this.hitsService.get()
+      .subscribe((data: {}) => {
+          this.dataSource = new MatTableDataSource(data['hits'])
+      });
+  }
+
+  setNewInterval(){
+    this.interval = setInterval(() => {this.showData();},10000)
   }
 }
 
